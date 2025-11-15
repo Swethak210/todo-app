@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  margin: 0;
+  min-width: 250px;
+  font-family: Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+ul { margin: 0; padding: 0; }
+
+ul li {
+  cursor: pointer;
+  position: relative;
+  padding: 12px 8px 12px 40px;
+  list-style-type: none;
+  background: #eee;
+  font-size: 18px;
+  transition: 0.2s;
+  user-select: none;
+}
+
+ul li:nth-child(odd) { background: #f9f9f9; }
+ul li:hover { background: #ddd; }
+
+ul li.checked {
+  background: #888;
+  color: #fff;
+  text-decoration: line-through;
+}
+
+ul li.checked::before {
+  content: '';
+  position: absolute;
+  border-color: #fff;
+  border-style: solid;
+  border-width: 0 2px 2px 0;
+  top: 10px;
+  left: 16px;
+  transform: rotate(45deg);
+  height: 15px;
+  width: 7px;
+}
+
+.close {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 12px 16px;
+  cursor: pointer;
+}
+.close:hover { background-color: #f44336; color: white; }
+
+.header {
+  background-color: #f44336;
+  padding: 30px 40px;
+  color: white;
+  text-align: center;
+}
+.header:after { content: ""; display: table; clear: both; }
+
+input, select {
+  margin: 0;
+  border: none;
+  padding: 10px;
+  font-size: 16px;
+}
+
+#myInput { width: 45%; float: left; }
+#priority { width: 20%; float: left; }
+
+.addBtn {
+  padding: 10px;
+  width: 20%;
+  background: #d9d9d9;
+  color: #555;
+  float: left;
+  text-align: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.addBtn:hover { background-color: #bbb; }
+
+/* Filter buttons */
+.filterBtn {
+  padding: 10px;
+  margin: 5px;
+  background: #eee;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+.filterBtn:hover { background: #ddd; }
+
+/* Search bar */
+#searchInput {
+  width: 90%;
+  padding: 10px;
+  margin: 10px auto;
+  display: block;
+  font-size: 16px;
+}
+
+/* Priority styles */
+.high { background-color: #ff9999; }
+.medium { background-color: #fff799; }
+.low { background-color: #b3ffb3; }
+</style>
+</head>
+<body>
+
+<div id="myDIV" class="header">
+  <h2 style="margin:5px">My To Do List</h2>
+  <input type="text" id="myInput" placeholder="Title...">
+  <select id="priority">
+    <option value="low">Low</option>
+    <option value="medium">Medium</option>
+    <option value="high">High</option>
+  </select>
+  <span id="addBtn" class="addBtn">Add</span>
+  <br><br>
+  <!-- Filter buttons -->
+  <button class="filterBtn" onclick="filterTasks('all')">Show All</button>
+  <button class="filterBtn" onclick="filterTasks('high')">High</button>
+  <button class="filterBtn" onclick="filterTasks('medium')">Medium</button>
+  <button class="filterBtn" onclick="filterTasks('low')">Low</button>
+</div>
+
+<!-- Search bar -->
+<input type="text" id="searchInput" placeholder="Search tasks...">
+
+<ul id="myUL"></ul>
+
+<script>
+const input = document.getElementById("myInput");
+const prioritySelect = document.getElementById("priority");
+const addBtn = document.getElementById("addBtn");
+const list = document.getElementById("myUL");
+const searchInput = document.getElementById("searchInput");
+
+// Load tasks from localStorage
+function loadTasks() {
+  list.innerHTML = localStorage.getItem("tasks") || "";
+}
+loadTasks();
+
+// Save tasks to localStorage
+function saveTasks() {
+  localStorage.setItem("tasks", list.innerHTML);
+}
+
+// Create a new list item
+function newElement() {
+  const inputValue = input.value.trim();
+  const priority = prioritySelect.value;
+
+  if (!inputValue) {
+    alert("You must write something!");
+    return;
+  }
+
+  const li = document.createElement("li");
+  li.textContent = inputValue;
+  li.classList.add(priority);
+
+  const span = document.createElement("span");
+  span.textContent = "×";
+  span.className = "close";
+  li.appendChild(span);
+
+  list.appendChild(li);
+  input.value = "";
+  saveTasks();
+}
+
+// Add task on button click
+addBtn.addEventListener("click", newElement);
+
+// Add task on Enter key
+input.addEventListener("keypress", function(e) {
+  if (e.key === "Enter") newElement();
+});
+
+// Event delegation for list actions
+list.addEventListener("click", function(e) {
+  if (e.target.tagName === "LI") {
+    e.target.classList.toggle("checked");
+    saveTasks();
+  } else if (e.target.classList.contains("close")) {
+    e.target.parentElement.remove();
+    saveTasks();
+  }
+});
+
+// Filter tasks by priority
+function filterTasks(priority) {
+  const tasks = list.getElementsByTagName("li");
+  for (let task of tasks) {
+    if (priority === "all") {
+      task.style.display = "";
+    } else {
+      task.style.display = task.classList.contains(priority) ? "" : "none";
+    }
+  }
+}
+
+// Search tasks by keyword
+searchInput.addEventListener("keyup", function() {
+  const filter = searchInput.value.toLowerCase();
+  const tasks = list.getElementsByTagName("li");
+  for (let task of tasks) {
+    const text = task.textContent.toLowerCase();
+    task.style.display = text.includes(filter) ? "" : "none";
+  }
+});
+</script>
+
+</body>
+</html>
